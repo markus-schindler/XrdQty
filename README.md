@@ -24,7 +24,7 @@ Natural minerals, especially clay, are typically poorly crystalline. This low cr
  
 ### Clone the repo:
 ```
-git clone https://github.com/mschindler779/XrdQty.git
+git clone https://github.com/markus-schindler/XrdQty.git
 cd XrdQty
 ```
 
