@@ -20,6 +20,10 @@ Natural minerals, especially clay, are typically poorly crystalline. This low cr
 ### Prerequisites
 
 * python 3.12.11
+* numpy 2.3.5
+* pandas 3.0.2
+* scikit-learn 1.6.1
+* torch
 * pip (Python package manager)
  
 ### Clone the repo:
@@ -97,4 +101,4 @@ xrd_qty.predict("XRD Data.csv")
 
 This project is licensed under the MIT License - see the LICENSE file for details
 
-© 2025 Markus Schindler
+© 2026 Markus Schindler
