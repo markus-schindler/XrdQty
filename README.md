@@ -15,6 +15,8 @@
 
 Natural minerals, especially clay, are typically poorly crystalline. This low crystallinity, along with crystalline defects and amorphous fractions, diminishes and distorts diffraction peaks, making conventional Rietveld refinement cumbersone and unreliable for phase quantification. **XrdQty** circumvents these difficulties by producing synthetics patterns. The tool demonstrated on **Hectorite**, a smectite clay that can accumulate significant lithium concentrations, positioning it as a potential lithium resource. Because experimental training data are scarce, **XrdQty** derives its synthetic patterns from crystal-lattice parameters and applies appropriate distribution functions to model peak shapes and intensities. The resulting datasets have proven effective for quality-control workflows, delivering accurate phase quantification even in complex, low-crystallinity samples.
 
+![plot](SyntheticXRD.png)
+
 ## Installation
 
 ### Prerequisites
@@ -95,6 +97,7 @@ xrd_qty.predict("XRD Data.csv")
 ├── maxIntensity.csv **Reference Peak Intensities**<br/>
 ├── requirements.txt **Python dependencies**<br/>
 ├── README.md **This file**<br/>
+├── SyntheticXRD.png **XRD Example**<br/>
 └── LICENSE **MIT license**
 
 ## License
