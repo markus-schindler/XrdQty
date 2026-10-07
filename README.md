@@ -1,104 +1,102 @@
-# XrdQty
+# XrdQty: Physics-Informed Synthetic Data Pipeline for Spectral Quantification
 
-## Tool to quantify crystalline Phases via X-Ray Diffraction Measurements
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit-license/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
-**XrdQty** is a lightweight Python tool that synthesizes X-ray diffraction (XRD) patterns for use in training convolutional neural networks. By generating large, labeled datasets, it enables automated quantification of mineral phases. A critical step for assessing the purity and performance of natural materials that often contain multiple co-existing phases.
+## Overview
+**XrdQty** is an end-to-end machine learning pipeline designed for the quantitative analysis of complex pattern signatures (X-ray Diffraction). The project addresses the challenge of **data scarcity** in analysis by implementing a physics-based synthetic data generator to train a deep learning model for multi-target regression.
 
-## Table of contents
-
-* Description and background
-* Installation
-* Getting Started
-* Usage
-
-## Description and background
-
-Natural minerals, especially clay, are typically poorly crystalline. This low crystallinity, along with crystalline defects and amorphous fractions, diminishes and distorts diffraction peaks, making conventional Rietveld refinement cumbersone and unreliable for phase quantification. **XrdQty** circumvents these difficulties by producing synthetics patterns. The tool demonstrated on **Hectorite**, a smectite clay that can accumulate significant lithium concentrations, positioning it as a potential lithium resource. Because experimental training data are scarce, **XrdQty** derives its synthetic patterns from crystal-lattice parameters and applies appropriate distribution functions to model peak shapes and intensities. The resulting datasets have proven effective for quality-control workflows, delivering accurate phase quantification even in complex, low-crystallinity samples.
+The system transforms raw physical parameters into high-fidelity synthetic pattern, which are then used to train a **1D-Convolutional Neural Network (CNN)** capable of quantifying the composition of multi-phase mixtures with high precision.
 
 ![plot](SyntheticXRD.png)
 
-## Installation
+**Figure 1:** Typical X-ray Diffraction Pattern for a crystalline Mineral Phase.
 
-### Prerequisites
+---
 
-* python 3.12.11
-* numpy 2.3.5
-* pandas 3.0.2
-* scikit-learn 1.6.1
-* torch
-* pip (Python package manager)
+## Technical Architecture
+
+### 1. The Data Engine (Physics-Based Synthesis)
+Instead of relying on limited experimental datasets, XrdQty implements a generative model based on physical laws:
+*   **Signal Synthesis:** Implements the **Cauchy Distribution** to simulate peak shapes and intensities, incorporating the **Scherrer equation** logic for crystallite size and peak broadening (FWHM).
+*   **Stochastic Composition:** A random sampling engine that generates diverse mineral phase combinations, ensuring the training set covers a wide variance of the feature space.
+*   **Noise Injection:** To increase model robustness and prevent overfitting, the pipeline injects realistic background noise and baseline offsets into the synthetic signals.
+*   **Data Normalization:** Integrated `StandardScaler` pipelines to ensure feature scaling for optimal neural network convergence.
+
+### 2. The Deep Learning Model (1D-CNN)
+The core of the quantification engine is a custom **1D-Convolutional Neural Network** implemented in **PyTorch**, optimized for sequential spectral data:
+*   **Feature Extraction:** Three convolutional layers (`Conv1d`) with increasing filter depth (32 $\rightarrow$ 64 $\rightarrow$ 128) to extract hierarchical spectral patterns (from simple peaks to complex phase overlaps).
+*   **Downsampling:** `MaxPool1d` layers to reduce spatial dimensionality and ensure translation invariance of the spectral peaks.
+*   **Regression Head:** A fully connected MLP (Multi-Layer Perceptron) that maps the extracted features to a continuous output vector representing the fractional composition of each phase.
+*   **Hardware Acceleration:** Native support for **CUDA**, allowing for seamless switching between CPU and GPU for high-speed training.
+
+### 3. Evaluation & Lifecycle
+*   **Loss Function:** Optimized using Mean Squared Error (MSE) for regression.
+*   **Metrics:** Implementation of **Mean Absolute Error (MAE)** to quantify the deviation between predicted and ground-truth compositions.
+*   **Persistence:** Full model serialization/deserialization logic (`.pth` files) for production-ready deployment.
+
+---
+
+## Tech Stack
+*   **Deep Learning:** PyTorch (nn.Module, Conv1d, Optim)
+*   **Data Science:** NumPy, Pandas, Scikit-Learn (StandardScaler, train_test_split)
+*   **Mathematics:** Cauchy Distribution, Spectral Analysis, Signal Processing
+*   **Hardware:** CUDA-enabled GPU acceleration
+
+---
+
+## ML Workflow
+**Synthetic Generation** $\rightarrow$ **Pre-processing** $\rightarrow$ **CNN Training** $\rightarrow$ **Model Validation** $\rightarrow$ **Inference**
+
+1.  **Generator:** `PDFData` $\rightarrow$ Creates $\sim 10^n$ synthetic samples based on physical structure files.
+2.  **Trainer:** `XrdQty.model_training` $\rightarrow$ Fits the 1D-CNN to the synthetic data.
+3.  **Quantifier:** `XrdQty.predict` $\rightarrow$ Takes a new, unknown diffraction pattern and outputs the quantitative phase composition.
+
+---
+
+## Installation & Usage
  
-### Clone the repo:
-```
+```bash
+# Clone the repository
 git clone https://github.com/markus-schindler/XrdQty.git
-cd XrdQty
-```
+cd FluxCat
 
-### Create a virtual environment (optional but recommended)
-```
+# Create a virtual environment (optional but recommended)
 python -m venv /path/to/new/virtual/environment
 source /path/to/new/virtual/environment/bin/activate
-```
-
-### Install dependencies
-```
-python -m pip install -r requirements.txt
-```
-
-## Getting Started
-
-### Preparing Your Structure Folder
-Add new minerals by adding a CSV file to the structure folder. Each CSV must list **Reflex Position** (2 Theta in degrees) and the relative **Peak Intensities**. **Important** The maximum intensity must be 100. This normalizes all peaks and keeps the PDF (Probability Distribution Function) generation stable.
-
-### maxIntensity.csv
-This file lists the **maximum Reference Intensity** for each mineral. It is used to normalise the synthetic patterns and to build the probability distribution. Furthermore, the **minimum Allowed Fraction** for each mineral is stored in this file. For e.g., the major phase Hectorite clay could start at 40 %, while impurities as Quartz or Hematite start at 0 percent.  
-
-## Usage
-
-### Import of XrdQty in python
-```
+  
+# Install dependencies
+pip install -r requirements.txt
+  
+# Import the module in python
 import XrdQty
-```
 
-### Initiate XrdQty
-Tool initializing as:
-```
+# Initiate XrdQty
 xrd_qty = XrdQty.XrdQty(start_angle = 10, stop_angle = 90, angle_steps = 8501, model_name = "model_name")
-```
 
-### Create Training Data
-By default, the program generates 500 synthetic powder X‑ray diffraction patterns. If you need a different number, simply edit the `XrdQty.py` file. The diffraction intensities are written to `features.csv`, while the associated mineral compositions are stored in `label.csv`.
-```
+# Create Training Data
 xrd_qty.create_training_data()
-```
 
-### CNN Model Training
-You can now start training the convolutional neural network; the trained model will be saved as **"model_name.pth"**.
-```
+# CNN Model Training; Model is saved as model_name.pth
 xrd_qty.model_training()
-```
 
-### Loading Existing Model
-If the model has just been prepared, the next step can be omitted.
-```
+# Load existing Model
 xrd_qty.load_model()
-```
 
-### Predicting Phase Quantity
-The X‑ray diffraction powder pattern of interest can be analyzed to predict mineral quantities as follows.
-```
+# Predicting Phase Quantity
 xrd_qty.predict("XRD Data.csv")
+
 ```
-
-## File Structure
-
-├── XrdQty.py **Main application**<br/>
-├── structure **Folder for Structure Data**<br/>
-├── maxIntensity.csv **Reference Peak Intensities**<br/>
-├── requirements.txt **Python dependencies**<br/>
-├── README.md **This file**<br/>
-├── SyntheticXRD.png **XRD Example**<br/>
-└── LICENSE **MIT license**
+  
+## Project Structure
+```text                                                 
+├── maxIntensity.csv    # Reference peak intensities
+├── README.md           # This file
+├── requirements.txt    # Dependency list
+├── structure/          # XRD pattern files
+├── XrdQty.py           # Main execution engine
+└── LICENSE             # MIT License
+```
 
 ## License
 
