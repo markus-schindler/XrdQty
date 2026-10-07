@@ -1,4 +1,4 @@
-# XrdQty: Synthetic Data Pipeline for Phase Quantification in Powder X-ray Diffraction Pattern
+# XrdQty: Synthetic Data Pipeline for Phase Quantification
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit-license/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
