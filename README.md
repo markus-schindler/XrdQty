@@ -1,4 +1,4 @@
-# XrdQty: Physics-Informed Synthetic Data Pipeline for Spectral Quantification
+# XrdQty: Synthetic Data Pipeline for Phase Quantification in Powder X-ray Diffraction Pattern
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit-license/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
@@ -59,7 +59,7 @@ The core of the quantification engine is a custom **1D-Convolutional Neural Netw
 ```bash
 # Clone the repository
 git clone https://github.com/markus-schindler/XrdQty.git
-cd FluxCat
+cd XrdQty
 
 # Create a virtual environment (optional but recommended)
 python -m venv /path/to/new/virtual/environment
